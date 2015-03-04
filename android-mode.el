@@ -390,10 +390,16 @@ current buffer."
         (cond ((and package class) (concat package "." class))
               (class class))))))
 
+(defun android-manifest-file ()
+  (let ((filename "AndroidManifest.xml"))
+    (if (equal android-mode-builder 'gradle)
+	(concat "app/src/main/" filename)
+      filename)))
+
 (defun android-project-package ()
   "Return the package of the Android project"
   (android-in-root
-   (let ((root (car (xml-parse-file "AndroidManifest.xml"))))
+   (let ((root (car (xml-parse-file (android-manifest-file)))))
      (xml-get-attribute root 'package))))
 
 (defun android-project-main-activities (&optional category)
@@ -418,7 +424,7 @@ Filter on CATEGORY intent when supplied."
                                                      'category)))
                             (equal (concat "android.intent.category." category)
                                    (xml-get-attribute el 'android:name)))))
-     (let* ((root (car (xml-parse-file "AndroidManifest.xml")))
+     (let* ((root (car (xml-parse-file (android-manifest-file))))
             (package (xml-get-attribute root 'package))
             (application (first-xml-child root 'application)))
        (mapcar (lambda (activity)
